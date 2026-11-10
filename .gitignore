@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+.env
+data/
+plugin_data/
+private/
+*.db
+*.db-*
+*.sqlite*
+*.tar.gz
+cookie*

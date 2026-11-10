@@ -1,0 +1,31 @@
+{
+  "version": "1.2.2",
+  "files": {
+    ".gitignore": "946ad9e2acccc6db4d9f1ec7fa71e101746f8172af2498d52d6b55d8f8eac46c",
+    "README.md": "ec6e34f1d1e6401de9ef7a812d22092c05805955dc7bdce7afc104743df47986",
+    "_conf_schema.json": "8731464527b50697fa708fb700c5c14acb75ed92a06fc93a6ccb1e04d9c291d8",
+    "compat.py": "78151bbf93e2eac7cc3377aea7b4048b3a298b0d7556ea69db84ab5ee85ce331",
+    "engine.py": "e4e36b1a57b47ce25b9ebf1d810eea6df80e177882aefde775782e31132a88b0",
+    "integrations/bili_shared_memory_backend.py": "3e1b7df14e3be477dccca12eaeffd24047db9d817843357a0fa83829a2327a59",
+    "main.py": "bd2ffbb835cae6a550848ab06c82e4aabbc4f0cbae684c77fc66ccea544044ef",
+    "metadata.yaml": "61d79f1b34f5bc0281960ea17e453cabc062b47dba34509f791ffffef38c099a",
+    "migration.py": "765ed89a28899e55c0448fd8f65cbb36a9115a0f86c17e30f8ae788462cbaac6",
+    "pages/dashboard/app.js": "01d902cda4c9e517e699537d9c89c5e19ad5ed958a771c86b7fb0a1be3764434",
+    "pages/dashboard/graph-layout.js": "18b38ea15933e620b40a14b91f29c385611b45a4fdac9b01c176db324dee7f7f",
+    "pages/dashboard/graph.js": "985528bbab6fe94d708c6f043c9d1b4ea6550b90fe0a898e001ce590fa8fa416",
+    "pages/dashboard/index.html": "8d274cb7e62f035b8965d1332920829d52427cee8480096caadc093b2c48f285",
+    "pages/dashboard/memory-detail.js": "eebd049ed9e39b29f9f8be1882fe0992393365a4f5cda773aac8b2f92bf929f6",
+    "pages/dashboard/memory-presentation.js": "25223bdc95d2f5771c35232e286a37d81877762f213456f171e1cc093127eb57",
+    "pages/dashboard/series.css": "2491aa590184f18ca3f7ea9f004c5f6cc898953d9f737171d91b2e28ef3954e4",
+    "pages/dashboard/style.css": "7018db05027f87270b15fab520743878bd786161dadb192a6a40bbeb808057b8",
+    "requirements.txt": "ce10749644cd90712d6a344347d8b143d78c7f2209af3c3f321a98c03b1eeb20",
+    "scene_policy.py": "ab66af91b363ba1dd90d838bf0be599b94f2f2bc84a07ae6eeb2bd87ee9792ad",
+    "service.py": "c83ce5402eefbc49021202ec96d641ef5459edcf9ad66338e1d8c54423671799",
+    "tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tests/test_compat.py": "6fc1572dd3e0d146cfbfb5fe1dca6b957490255d834bb8e5bc937d535baeace5",
+    "tests/test_engine.py": "f18c091930bbf4ab5cf60e16ee956385c1ad7de18315c932a42dad53465fa543",
+    "tests/test_host.py": "d46b3df9c6c5717c76967d68be663fe25b9870ca22cc61c570d22c514fe1c9f5",
+    "tests/test_integration.py": "e247d4f722a8d1918ff4a057d78e7aac0bfa9bc925dc1978582ff0239c50c56f",
+    "tests/test_scene_policy.py": "496057831569fd382030a30cc7c77ac59b95dc7589dbd8f60783093dab1c6cd5"
+  }
+}

@@ -1,0 +1,7 @@
+name: astrbot_plugin_memory_branches
+display_name: 记忆分支适配器
+author: yipqh
+version: 1.2.2
+desc: 独立记忆空间、自动和手动总结、节点回退、关联图谱与可解释召回。
+astrbot_version: ">=4.29.4"
+repo: https://github.com/YepStar/astrbot_plugin_memory_branches
