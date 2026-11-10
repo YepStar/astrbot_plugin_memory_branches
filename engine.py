@@ -319,6 +319,7 @@ class Engine:
         host=None,
         metadata=None,
         expected_revision=None,
+        expected_generation=None,
     ) -> bool:
         content = str(content or "").strip()
         if not content or role not in {"user", "assistant", "memory", "reflection"}:
@@ -328,6 +329,8 @@ class Engine:
             self._writable(db, bank)
             if source not in info["routes"]:
                 raise PermissionError("来源与这套记忆不匹配")
+            if expected_generation is not None and info["generation"] != expected_generation:
+                raise ValueError("integration_generation_changed")
             if expected_revision is not None and info["revision"] != expected_revision:
                 return False
             inserted = db.execute(

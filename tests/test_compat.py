@@ -47,3 +47,25 @@ class SourceMappingTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     migrate(Path(temp), destination, private_route=first, new_private_route=second)
                 self.assertFalse(destination.exists())
+
+class PublicIntegrationCheckpointTests(unittest.TestCase):
+    def test_stale_ingestion_checkpoint_cannot_resurrect_after_rollback(self):
+        with tempfile.TemporaryDirectory() as temp:
+            engine=Engine(Path(temp)/'memory.db')
+            bank=engine.create_bank('公开',['bilibili:public'])
+            facade=PublicMemory(NS(engine=engine,kick=lambda _:None),bank)
+            checkpoint=facade.checkpoint('bilibili:public')
+            self.assertTrue(facade.put_checkpointed('bilibili:public','key','旧阅读',checkpoint))
+            with engine.transaction() as db:
+                db.execute('DELETE FROM messages WHERE bank=?',(bank,))
+                db.execute('UPDATE banks SET generation=generation+1 WHERE id=?',(bank,))
+            with self.assertRaises(ValueError):facade.put_checkpointed('bilibili:public','queued','延迟到达的旧内容',checkpoint)
+            self.assertEqual(facade.rows(),[])
+            fresh=facade.checkpoint('bilibili:public')
+            self.assertTrue(facade.put_checkpointed('bilibili:public','new','回退后新阅读',fresh))
+            self.assertFalse(facade.put_checkpointed('bilibili:public','new','回退后新阅读',fresh))
+    def test_public_checkpoint_rejects_private_scope(self):
+        with tempfile.TemporaryDirectory() as temp:
+            engine=Engine(Path(temp)/'memory.db');bank=engine.create_bank('私聊',['qq:FriendMessage:1'])
+            facade=PublicMemory(NS(engine=engine,kick=lambda _:None),bank)
+            with self.assertRaises(PermissionError):facade.checkpoint('qq:FriendMessage:1')

@@ -40,6 +40,27 @@ class PublicMemory:
         self.plugin.kick(self.bank)
         return hashlib.sha256(f"{scope}:{key}:{role}".encode()).hexdigest()
 
+    integration_api = 1
+
+    def checkpoint(self, scope):
+        if not public_source(scope) or self.engine.route(scope) != self.bank:
+            raise PermissionError('Unknown public source')
+        return {'bank':self.bank,'generation':self.engine.bank(self.bank)['generation']}
+
+    def put_checkpointed(self, scope, key, content, checkpoint, *, payload=None):
+        if not isinstance(checkpoint,dict) or checkpoint.get('bank') != self.bank:
+            raise PermissionError('Public bank changed')
+        current=self.checkpoint(scope)
+        if type(checkpoint.get('generation')) is not int or current != checkpoint:
+            raise ValueError('integration_generation_changed')
+        payload=payload or {}
+        if ':FriendMessage:' in str(payload.get('umo') or payload.get('session_id') or ''):
+            raise PermissionError('Private data cannot enter public memory')
+        inserted=self.engine.append(self.bank,scope,str(key),'memory',str(content),metadata=payload,
+                                    expected_generation=checkpoint['generation'])
+        if inserted:self.plugin.kick(self.bank)
+        return inserted
+
     def rows(self, scope=None, limit=200, *, public_only=False):
         if scope is not None and self.engine.route(scope) != self.bank:
             raise PermissionError("Unknown public memory scope")
