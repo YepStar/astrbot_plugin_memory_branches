@@ -1,4 +1,4 @@
-# 记忆分支适配器
+# 冷月系—并行记忆分支
 
 AstrBot 4.29.4+ 独立长期记忆插件。借鉴 LivingMemory 的整理、生命周期和图谱思路，重新实现独立空间及检查点，不依赖旧记忆插件运行。对话风格学习也按空间隔离。
 
@@ -85,3 +85,14 @@ PYTHONPATH=/AstrBot/data/plugins:/AstrBot python -m unittest discover \
 通过插件管理页更新代码前备份 `data/plugin_data/astrbot_plugin_memory_branches/` 和 AstrBot 主会话库。普通升级保留现有配置与数据库，不重新运行初次迁移脚本；已经迁移的新记忆库应整体恢复。
 
 仓库根目录提供插件入口、`metadata.yaml`、`_conf_schema.json`、`requirements.txt` 及可视化页面。元数据中的名称、作者和版本是稳定的插件身份。公开仓库可供链接安装；插件市场收录还需在 [AstrBot Cloud](https://cloud.astrbot.app) 提交并完成审核，公开仓库本身不代表已上架。发布规则见 [AstrBot 官方文档](https://docs.astrbot.app/dev/star/plugin-publish.html)。
+
+
+## 冷月系插件
+
+本插件与下列插件均由 **YepStar** 创作和维护，属于同一作者的「冷月系」插件系列，各自独立安装并按需组合。
+
+- [冷月系—并行记忆分支](https://github.com/YepStar/astrbot_plugin_memory_branches)：独立记忆空间、总结节点回退与召回。
+- [冷月系—杂项/叠加层](https://github.com/YepStar/astrbot_plugin_misc_adapter)：可选小功能与市场插件叠加层（私有定制仓库）。
+- [冷月系—Zlib知识库](https://github.com/YepStar/astrbot_plugin_zlib_knowledge)：搜书、下载与知识库管理。
+- [冷月系—网易云音乐](https://github.com/YepStar/astrbot_plugin_netease_browser)：歌曲搜索、分享与音乐互动。
+- [冷月系—自然意图分析](https://github.com/YepStar/astrbot_plugin_intent_bridge)：将自然语言转换成可执行的指令与工具调用，让“帮我找本书”“来一首歌”等表达直接触发已接入插件的能力，沿用各插件的权限和确认规则。
