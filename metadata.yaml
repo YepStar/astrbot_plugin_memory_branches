@@ -1,7 +1,7 @@
 name: astrbot_plugin_memory_branches
 display_name: 冷月系—并行记忆分支
 author: yipqh
-version: 1.2.3
+version: 1.2.4
 short_desc: 独立记忆空间、总结回退与图谱召回
 desc: 独立长期记忆插件，支持来源隔离、自动和手动总结、节点删除回退、关联图谱、可解释召回与说话习惯学习。
 astrbot_version: ">=4.29.4"

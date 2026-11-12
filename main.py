@@ -408,17 +408,14 @@ class MemoryBranchesPlugin(Star):
                 result = {}
             elif action == "learn-style":
                 result = self.start_style(bank)
-            elif action == "styles":
-                current = self.engine.dataset(
-                    bank, "styles.json", {"cursor": 0, "patterns": [], "enabled": True}
+            elif action in {"styles", "delete-style"}:
+                result = self.engine.update_styles(
+                    bank,
+                    enabled=data.get("enabled") if "enabled" in data else None,
+                    pattern_id=str(data.get("id") or "") or None,
+                    pattern_enabled=data.get("pattern_enabled") if "pattern_enabled" in data else None,
+                    delete=action == "delete-style",
                 )
-                if "enabled" in data:
-                    current["enabled"] = bool(data["enabled"])
-                for p in current["patterns"]:
-                    if p["id"] == data.get("id"):
-                        p["enabled"] = bool(data.get("pattern_enabled"))
-                self.engine.put_dataset(bank, "styles.json", current)
-                result = {}
             else:
                 raise ValueError("未知操作")
             return {"status": "ok", "data": result}

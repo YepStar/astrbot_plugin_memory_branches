@@ -59,3 +59,27 @@ class IntegrationTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(plugin.engine.state(bank)['memory_count'],0)
             self.assertEqual(json.loads(manager.records['a'].history)[0]['content'],'原始')
             await plugin.terminate()
+
+    async def test_style_delete_api_preserves_other_items_and_bank(self):
+        from astrbot_plugin_memory_branches.tests.test_host import Conversations
+        class Context:
+            conversation_manager=Conversations()
+            def register_web_api(self,*args):pass
+            def get_registered_star(self,*args):return None
+        with tempfile.TemporaryDirectory() as root,patch('astrbot_plugin_memory_branches.main.StarTools.get_data_dir',return_value=Path(root)):
+            plugin=MemoryBranchesPlugin(Context(),{})
+            bank=plugin.engine.create_bank('A',['qq_bot:FriendMessage:1'])
+            plugin.engine.put_dataset(bank,'styles.json',{'cursor':8,'patterns':[{'id':'one','enabled':True},{'id':'two','enabled':True}],'enabled':True})
+            await plugin.initialize()
+            app=Quart(__name__)
+            async with app.test_request_context('/action',method='POST',json={'action':'delete-style','bank':bank,'id':'one'}):
+                result=await plugin.api_action()
+                self.assertEqual(result['status'],'ok')
+                self.assertEqual(result['data']['deleted'],'one')
+            current=plugin.engine.dataset(bank,'styles.json')
+            self.assertEqual([p['id'] for p in current['patterns']],['two'])
+            self.assertEqual(current['cursor'],8)
+            async with app.test_request_context('/action',method='POST',json={'action':'delete-style','bank':bank,'id':'missing'}):
+                result=await plugin.api_action()
+                self.assertEqual(result['status'],'error')
+            await plugin.terminate()

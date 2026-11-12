@@ -286,3 +286,29 @@ class AsyncTests(unittest.IsolatedAsyncioTestCase):
             "我喜欢音乐",
         )
         self.assertIsNone(self.engine.dataset(self.b, "styles.json"))
+
+class StyleEditingTests(unittest.TestCase):
+    def test_delete_only_selected_style_and_reject_stale_learning(self):
+        with tempfile.TemporaryDirectory() as root:
+            engine = Engine(Path(root) / 'memory.db')
+            a = engine.create_bank('A', ['qq_bot:FriendMessage:1'])
+            b = engine.create_bank('B', ['qq_bot:FriendMessage:2'])
+            styles = {'cursor': 42, 'enabled': True, 'updated': 123,
+                      'patterns': [{'id': 'old', 'enabled': True}, {'id': 'new', 'enabled': False}]}
+            engine.put_dataset(a, 'styles.json', styles)
+            engine.put_dataset(b, 'styles.json', styles)
+            revision = engine.bank(a)['revision']
+            self.assertEqual(engine.update_styles(a, pattern_id='new', delete=True), {'deleted': 'new'})
+            expected = {**styles, 'patterns': [styles['patterns'][0]]}
+            self.assertEqual(Engine(Path(root) / 'memory.db').dataset(a, 'styles.json'), expected)
+            self.assertEqual(engine.dataset(b, 'styles.json'), styles)
+            self.assertFalse(engine.put_dataset(a, 'styles.json', styles, revision=revision))
+            with self.assertRaises(ValueError):
+                engine.update_styles(a, pattern_id='new', delete=True)
+            with self.assertRaises(ValueError):
+                engine.update_styles(a, delete=True)
+            engine.update_styles(a, pattern_id='old', pattern_enabled=False)
+            self.assertFalse(engine.dataset(a, 'styles.json')['patterns'][0]['enabled'])
+            self.assertEqual(engine.dataset(a, 'styles.json')['cursor'], 42)
+            engine.update_styles(a, enabled=False)
+            self.assertFalse(engine.dataset(a, 'styles.json')['enabled'])

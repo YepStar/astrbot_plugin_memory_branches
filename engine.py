@@ -947,6 +947,32 @@ class Engine:
             db.execute("UPDATE banks SET revision=revision+1 WHERE id=?", (bank,))
             return True
 
+    def update_styles(self, bank: str, *, enabled=None, pattern_id=None, pattern_enabled=None, delete=False):
+        """Edit one bank's live style dataset atomically; invalidate stale learning results."""
+        with self.transaction() as db:
+            self._bank(db, bank)
+            self._writable(db, bank)
+            row = db.execute("SELECT payload FROM datasets WHERE bank=? AND name='styles.json'", (bank,)).fetchone()
+            current = json.loads(row[0]) if row else {"cursor": 0, "patterns": [], "enabled": True}
+            if delete and not pattern_id:
+                raise ValueError("请选择要删除的说话习惯")
+            if pattern_id:
+                matches = [p for p in current["patterns"] if p.get("id") == pattern_id]
+                if not matches:
+                    raise ValueError("这项说话习惯不存在或已被删除")
+                if delete:
+                    current["patterns"] = [p for p in current["patterns"] if p.get("id") != pattern_id]
+                elif pattern_enabled is not None:
+                    for pattern in matches:
+                        pattern["enabled"] = bool(pattern_enabled)
+            if enabled is not None:
+                current["enabled"] = bool(enabled)
+            encoded = dumps(current)
+            if not row or row[0] != encoded:
+                db.execute("INSERT OR REPLACE INTO datasets VALUES(?, 'styles.json', ?)", (bank, encoded))
+                db.execute("UPDATE banks SET revision=revision+1 WHERE id=?", (bank,))
+            return {"deleted": pattern_id} if delete else {}
+
     def learnable(self, bank: str) -> list[dict]:
         previous = self.dataset(bank, "styles.json", {"cursor": 0})
         with self.connect() as db:
