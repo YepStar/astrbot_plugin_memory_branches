@@ -44,6 +44,7 @@ DEFAULTS = {
     "focus": "",
     "timezone": "Asia/Shanghai",
     "style_learning": True,
+    "ordinary_only_memory": False,
     "scene_memory_policy": DEFAULT_SCENE_POLICY,
 }
 
@@ -152,7 +153,8 @@ class ClosingConnection(sqlite3.Connection):
 
 
 class Engine:
-    def __init__(self, path: str | Path):
+    def __init__(self, path: str | Path, *, immersive_memory: bool | None = None):
+        self.immersive_memory = immersive_memory
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:
@@ -210,6 +212,7 @@ class Engine:
         return {
             **dict(row),
             "routes": json.loads(row["routes"]),
+            **({"global_immersive_memory": self.immersive_memory} if self.immersive_memory is not None else {}),
             "settings": {**DEFAULTS, **json.loads(row["settings"])},
             "baseline": json.loads(row["baseline"]),
         }
@@ -297,9 +300,13 @@ class Engine:
         ZoneInfo(merged["timezone"])
         if not str(name).strip() or len(str(name)) > 100:
             raise ValueError("记忆名称应为 1—100 个字")
-        for key in ("auto_summary", "auto_archive", "split_by_day", "style_learning"):
+        for key in ("auto_summary", "auto_archive", "split_by_day", "style_learning", "ordinary_only_memory"):
             if not isinstance(merged[key], bool):
                 raise ValueError(f"{key} 必须是开关")
+        if merged["ordinary_only_memory"] and not all(
+            re.fullmatch(r"[^:]+:FriendMessage:\d+", route) for route in self.bank(bank)["routes"]
+        ):
+            raise ValueError("普通内容记忆规则仅适用于独立QQ私聊空间")
         with self.transaction() as db:
             self._writable(db, bank)
             db.execute(

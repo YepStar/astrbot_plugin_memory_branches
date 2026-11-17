@@ -39,6 +39,7 @@ async function refresh({quiet=false}={}){
 }
 function schedulePoll(){clearTimeout(polling);polling=setTimeout(()=>refresh({quiet:true}),1800);}
 function render(){
+  $("global-immersive").checked=data.global_settings?.immersive_memory!==false;
   $('banks').innerHTML=(data.banks||[]).map(b=>`<button class="bank-button ${b.id===selected?'active':''}" data-bank="${esc(b.id)}"><span>◈ &nbsp;${esc(b.name)}</span><small>${b.memory_count} 条记忆 · ${b.pending_count} 条待总结</small></button>`).join('')||'<p class="muted">还没有记忆空间</p>';
   const s=data.state;if(!s){setMutation(mutation);return;}
   $('bank-name').textContent=s.name;
@@ -150,3 +151,10 @@ $('confirm-style-delete').onclick=()=>mutate(async()=>{
   await action('delete-style',item);$('style-delete-dialog').close();styleToDelete=null;
   await refresh({quiet:true});toast('已删除这项说话习惯');
 });
+
+$('global-immersive').onchange=async event=>{
+  const input=event.target,value=input.checked;input.disabled=true;
+  try{await action('global-settings',{immersive_memory:value});await refresh();toast('全局记忆口径已保存，适用于所有分支');}
+  catch(error){input.checked=!value;feedback(error.message,true);}
+  finally{input.disabled=false;}
+};

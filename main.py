@@ -22,7 +22,8 @@ class MemoryBranchesPlugin(Star):
     def __init__(self, context: Context, config: dict):
         super().__init__(context)
         self.context, self.config = context, config
-        self.engine = Engine(StarTools.get_data_dir(NAME) / "memory_branches.db")
+        self.engine = Engine(StarTools.get_data_dir(NAME) / "memory_branches.db",
+                             immersive_memory=config.get("immersive_memory", True) is True)
         self.host = HostHistory(context)
         self.service = Service(
             self.engine,
@@ -322,7 +323,8 @@ class MemoryBranchesPlugin(Star):
     async def api_state(self):
         try:
             bank = request.args.get("bank", "")
-            result = {"banks": self.engine.banks(), "ready": self._ready}
+            result = {"banks": self.engine.banks(), "ready": self._ready,
+                      "global_settings": {"immersive_memory": self.engine.immersive_memory}}
             if bank:
                 result["state"] = self.engine.state(bank)
                 for memory in result["state"]["memories"]:
@@ -355,7 +357,22 @@ class MemoryBranchesPlugin(Star):
             if not isinstance(data, dict):
                 raise ValueError("请求格式错误")
             action, bank = data.get("action"), str(data.get("bank", ""))
-            if action == "create":
+            if action == "global-settings":
+                value = data.get("immersive_memory")
+                if type(value) is not bool:
+                    raise ValueError("沉浸式记忆必须为开关")
+                previous = self.config.get("immersive_memory", True)
+                try:
+                    self.config["immersive_memory"] = value
+                    saver = getattr(self.config, "save_config", None)
+                    if callable(saver):
+                        saver()
+                except Exception:
+                    self.config["immersive_memory"] = previous
+                    raise
+                self.engine.immersive_memory = value
+                result = {"immersive_memory": value}
+            elif action == "create":
                 routes = data.get("routes")
                 if not isinstance(routes, list):
                     raise ValueError("来源必须是列表")

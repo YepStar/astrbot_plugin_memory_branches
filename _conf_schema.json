@@ -1,8 +1,38 @@
 {
-  "enabled": {"type":"bool","description":"启用记忆分支","default":true},
-  "summary_provider_id": {"type":"string","description":"总结模型提供商 ID（留空使用当前会话模型）","default":""},
-  "embedding_provider_id": {"type":"string","description":"可选向量模型提供商 ID（留空使用关键词和图谱召回）","default":""},
-  "summary_timeout_seconds": {"type":"int","description":"单次总结超时（秒）","default":120},
-  "recall_top_k": {"type":"int","description":"每次对话最多召回条数","default":5},
-  "recall_max_chars": {"type":"int","description":"注入记忆的最大字符数","default":3000}
+  "enabled": {
+    "type": "bool",
+    "description": "启用记忆分支",
+    "default": true
+  },
+  "summary_provider_id": {
+    "type": "string",
+    "description": "总结模型提供商 ID（留空使用当前会话模型）",
+    "default": ""
+  },
+  "embedding_provider_id": {
+    "type": "string",
+    "description": "可选向量模型提供商 ID（留空使用关键词和图谱召回）",
+    "default": ""
+  },
+  "summary_timeout_seconds": {
+    "type": "int",
+    "description": "单次总结超时（秒）",
+    "default": 120
+  },
+  "recall_top_k": {
+    "type": "int",
+    "description": "每次对话最多召回条数",
+    "default": 5
+  },
+  "recall_max_chars": {
+    "type": "int",
+    "description": "注入记忆的最大字符数",
+    "default": 3000
+  },
+  "immersive_memory": {
+    "type": "bool",
+    "description": "全局沉浸式记忆",
+    "hint": "统一作用于现有及新建记忆分支；按各自来源记事，不追加笼统的角色扮演免责声明。来源隔离、未发生的计划和外部资料归属仍保留。关闭后统一使用按来源总结口径，旧分支开关不覆盖全局设置。",
+    "default": true
+  }
 }

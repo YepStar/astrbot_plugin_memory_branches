@@ -7,17 +7,46 @@ IMMERSIVE = "immersive_shared_experience"
 DEFAULT = "source_based"
 
 RULE = (
-    "这套QQ私聊按沉浸式共同经历整理。双方在当前私聊中已经叙述发生、相互承接的互动、动作和感受，"
+    "本插件统一采用沉浸式记事口径。对于私聊中已经叙述发生、相互承接的互动、动作和感受，"
     "直接当作双方亲历事件保存，不追加虚拟聊天、角色扮演、模拟场景、并非现实接触等出戏声明。"
+    "摘要、事实原子和关系条目不得附加‘以上均为角色扮演创作，不是用户现实经历，也不代表真实人物关系’这类统一出戏声明。"
     "不能仅因事件由助手叙述就将其降格为风格或虚构；仍逐项保留谁做了什么、时间与完成状态。"
     "愿望、假设、计划、玩笑、转述和独立作品仍按原意区分，不把尚未发生的事记成已完成。"
     "外部帖子、文章、歌曲和他人经历仍是外部资料，不能转成用户经历；不伪造工具、支付、提醒或发送动作的完成结果。"
 )
 
 def enabled(bank):
+    if "global_immersive_memory" in bank:
+        return bank["global_immersive_memory"] is True
     routes = bank.get("routes", [])
     return (bank.get("settings", {}).get("scene_memory_policy") == IMMERSIVE
             and bool(routes) and all(re.fullmatch(r"[^:]+:FriendMessage:\d+", r) for r in routes))
+
+ORDINARY_RULE = (
+    "本独立私聊分支仅整理普通日常事实、偏好、约定和非性化互动。"
+    "涉及未成年角色的性化情节及其延续不得进入摘要、事实原子、关系或风格样本。"
+    "普通内容直接记事，不机械追加‘以上均为虚构角色扮演，不是现实事件’等无关免责声明。"
+    "保留原始说话人、计划和完成状态；确属独立作品、假设、转述或外部资料时保留其来源，不能冒充现实事件。"
+)
+
+
+def ordinary_enabled(bank):
+    routes = bank.get("routes", [])
+    return (bank.get("settings", {}).get("ordinary_only_memory") is True
+            and bool(routes) and all(re.fullmatch(r"[^:]+:FriendMessage:\d+", r) for r in routes))
+
+
+_ORDINARY_DISCLAIMER = re.compile(
+    r"(?:^|(?<=[。！？\n]))[ \t]*"
+    r"(?:以上|上述|该)(?:内容|互动|情节)?(?:均|都)?(?:为|是|属于)"
+    r"(?:虚构角色扮演(?:内容)?|虚构剧情和对话指令|角色扮演(?:创作|虚构情节)?|虚构情节)"
+    r"[，,；;](?:不是|并非|不是真实|没有证据表明|未见)[^。！？\n]{0,70}(?:[。！？]|$)"
+)
+
+
+def clean_ordinary_text(text):
+    return _ORDINARY_DISCLAIMER.sub("", text).strip()
+
 
 # Deliberately target scene disclaimers and scene labels, not every occurrence
 # of 现实/虚拟/角色扮演: VR equipment, games and quoted opinions must survive.
@@ -37,6 +66,7 @@ _LABELS = {
 
 def clean_text(text):
     original = text
+    text = _ORDINARY_DISCLAIMER.sub("", text)
     text = _DISCLAIMER.sub("", text)
     text = re.sub(r"(?:这|本次互动|这段互动)(?:只是|仅是|属于)(?:虚拟聊天|虚拟互动|虚拟场景)[^。！？\n]*(?:[。！？]|$)", "", text)
     for old, new in _LABELS.items():
@@ -44,11 +74,11 @@ def clean_text(text):
     return "共同经历" if text.strip() == "角色扮演" else (text.strip() if text != original else text)
 
 
-def clean_value(value):
+def clean_value(value, *, text_cleaner=clean_text):
     if isinstance(value, dict):
-        return {key: clean_value(item) for key, item in value.items()}
+        return {key: clean_value(item, text_cleaner=text_cleaner) for key, item in value.items()}
     if isinstance(value, list):
-        cleaned = [clean_value(item) for item in value]
+        cleaned = [clean_value(item, text_cleaner=text_cleaner) for item in value]
         return [item for item in cleaned if item != ""]
     if isinstance(value, str):
         if value.startswith(("{", "[")):
@@ -57,11 +87,12 @@ def clean_value(value):
             except ValueError:
                 pass
             else:
-                clean = clean_value(parsed)
+                clean = clean_value(parsed, text_cleaner=text_cleaner)
                 return value if clean == parsed else json.dumps(clean, ensure_ascii=False, separators=(",", ":"))
-        return clean_text(value)
+        return text_cleaner(value)
     return value
 
 
 def normalize(bank, value):
-    return clean_value(value) if enabled(bank) else value
+    result = clean_value(value) if enabled(bank) else value
+    return clean_value(result, text_cleaner=clean_ordinary_text) if ordinary_enabled(bank) else result

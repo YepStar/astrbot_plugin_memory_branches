@@ -30,3 +30,5 @@
 
 .style-actions{display:flex;align-items:center;gap:12px;flex-shrink:0}.style-actions .switch-line{margin:0;white-space:nowrap}.style-actions button{white-space:nowrap}
 @media(max-width:580px){.style-card{flex-wrap:wrap}.style-actions{margin-left:auto}}
+
+.global-memory-settings{margin:16px 0;padding:16px;border:1px solid var(--line,#ddd);border-radius:12px}.global-memory-settings label{display:flex;gap:8px;align-items:center}.global-memory-settings p{margin:8px 0 0}

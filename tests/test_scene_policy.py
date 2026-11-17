@@ -74,3 +74,21 @@ class ScenePolicyTests(unittest.IsolatedAsyncioTestCase):
   self.assertIn('不要把助手编写的故事记成用户现实经历',seen['system'])
 
 if __name__=='__main__':unittest.main()
+
+class GenericDisclaimerTests(unittest.TestCase):
+ def test_exact_reported_tail_is_removed_in_immersive_branch(self):
+  tail='以上均为角色扮演创作，不是用户现实经历，也不代表真实人物关系。'
+  bank={'routes':['qq_bot:FriendMessage:1607506865'],'settings':{'scene_memory_policy':IMMERSIVE}}
+  result=normalize(bank,{'summary':'两人约好周末散步。'+tail,
+      'key_facts':['约好周末散步。',tail], 'atoms':[{'content':'计划散步。'+tail}],
+      'relations':[{'source':'用户','target':'角色','relation':'朋友。'+tail}]})
+  self.assertEqual(result['summary'],'两人约好周末散步。')
+  self.assertEqual(result['key_facts'],['约好周末散步。'])
+  self.assertEqual(result['atoms'][0]['content'],'计划散步。')
+  self.assertEqual(result['relations'][0]['relation'],'朋友。')
+ def test_source_attribution_quotes_and_unconfigured_branches_are_preserved(self):
+  tail='以上均为角色扮演创作，不是用户现实经历，也不代表真实人物关系。'
+  other={'routes':['qq_bot:FriendMessage:13'],'settings':{}}
+  self.assertEqual(normalize(other,tail),tail)
+  for text in ['用户喜欢角色扮演游戏。','用户引用“'+tail+'”说明作品来源。','约好下周一起散步，尚未发生。']:
+   self.assertEqual(clean_text(text),text)
